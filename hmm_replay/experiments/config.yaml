@@ -1,0 +1,91 @@
+experiment_name:                    
+use_gpu:                            True
+gpu_id:                             0                    
+seed:                               0
+results_path:                       # if None given, will default to 'results' folder under run.
+
+network_simulation: True
+ode_simulation: False
+
+ode_run:
+  timestep:                         0.001
+
+task:                   
+  teacher_configuration:            rotation          
+  num_teachers:                     2                         
+
+training:
+  total_training_steps:             3000000
+  train_batch_size:                 1                         
+  learning_rate:                    0.01                                             
+  loss_function:                    mse                       # mse, bce
+  scale_head_lr:                    True                      # whether to add 1/N factor in lr of output layer  
+  scale_hidden_lr:                  True                      # whether to add 1/\sqrt{N} factor in forward of hidden layer(s)
+  train_hidden_layers:              True
+  train_head_layer:                 True
+  freeze_features:                  []                        # hidden layers frozen / unfrozen at these steps.
+
+data:
+  input_source:                     iid_gaussian              # iid_gaussian
+
+  iid_gaussian:
+    mean:                           0
+    variance:                       1
+    dataset_size:                   inf
+
+logging:
+  verbose:                          True
+  log_frequency:                    100
+  checkpoint_frequency:             500
+  print_frequency:                  500                    
+  log_to_df:                        True
+  merge_at_checkpoint:              True
+  save_weights_at_switch:           True
+  save_weight_frequency:            
+  save_initial_weights:             True
+  save_teacher_weights:             True
+  log_overlaps:                     True
+  
+testing:
+  test_batch_size:                  10000                     # generalisation error
+  test_frequency:                   100                       # how often during training to perform generalisation error test loop
+  overlap_frequency:                100                       # how often during training to compute / visualise overlap matrices
+
+model:
+  input_dimension:                  50                
+  output_dimension:                 1
+
+  student:
+    teacher_features_copy:                                      # emtpy/None = indpendent of teachers, integer = index of teacher to copy
+    student_hidden_layers:            [4]                       
+    student_nonlinearity:             scaled_erf                      
+    apply_nonlinearity_on_output:     False
+    student_initialisation_std:       0.001                     # std of normal initialisation for student network
+    initialise_student_outputs:       True                      # whether or not to initialise hidden -> output weights of student
+    copy_head_at_switch:              False                      # at task switch, copy over head weights from previous task
+    scale_student_forward_by_hidden:  False
+    student_bias_parameters:          False                     # whether or not to have bias parameters on linaer layers (student)
+    symmetric_student_initialisation: False                     # identically initialised student hidden units
+
+  teachers:
+    teacher_hidden_layers:            [100]                                                
+    teacher_nonlinearities:           [scaled_erf, scaled_erf]              # per teacher
+    normalise_teachers:               True
+    teacher_initialisation_std:       1                         # std of normal initialisation for teacher network
+    unit_norm_teacher_head:           True                      # choose head weight from 1, -1 or initialise using normal
+    scale_teacher_forward_by_hidden:  False
+    teacher_bias_parameters:          False                     # whether or not to have bias parameters on linaer layers (teacher)
+    teacher_noises:                   [0, 0]
+    rotation:
+      feature_rotation_alpha:         0.5
+      readout_rotation_alpha:         0
+
+curriculum:
+  stopping_condition:               switch_steps              # condition on which to switch task (fixed_period, switch_steps, or loss_thresholds)
+  
+  switch_steps:                     [1500000]
+  fixed_period:                     1                      # period for changing tasks 
+  loss_thresholds:                  [0.0001]                  # loss threshold under which teacher is changed
+
+  interleave_period:                                          # how often to interleave previous examples
+  interleave_duration:              1                         # number of examples from previous task to show in each interleaving
