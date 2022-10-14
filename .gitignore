@@ -1,0 +1,6 @@
+*__pycache__*
+hmm_replay/experiments/results/
+*.DS_Store
+*.pyc
+*.egg-info
+*.vscode/
